@@ -10,7 +10,12 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 # Load model
-model = load_model('medicinal_plant_classifier_model.h5')
+model = None
+
+def load_model():
+    global model
+    if model is None:
+        model = tf.keras.models.load_model('medicinal_plant_classifier_model.h5')
 
 class_names = ['Arive-Dantu', 'Basale', 'Betel', 'Crape_Jasmine', 'Curry', 'Drumstick', 
     'Fenugreek', 'Guava', 'Hibiscus', 'Indian_Beech', 'Indian_Mustard', 
@@ -62,6 +67,9 @@ def index():
 # Route for prediction
 @app.route('/predict', methods=['POST'])
 def predict():
+
+    load_model()  
+
     if 'myfile' not in request.files:
         return redirect(request.url)
     
@@ -74,17 +82,14 @@ def predict():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
 
-        # Load and preprocess image
-        img = image.load_img(file_path, target_size=(180, 180))  # match your model input size
+        img = image.load_img(file_path, target_size=(180, 180))
         img_array = image.img_to_array(img)
-        img_array = tf.expand_dims(img_array, 0)  # create batch axis
+        img_array = tf.expand_dims(img_array, 0)
 
-        # Predict
         predictions = model.predict(img_array)
         score = tf.nn.softmax(predictions[0])
         predicted_class = class_names[np.argmax(score)]
 
-        # Fetch medical info
         medical_info = class_names_to_info.get(predicted_class, "No information available.")
 
         return render_template(
@@ -93,6 +98,7 @@ def predict():
             medical_info=medical_info,
             filename=filename
         )
+
 
 if __name__ == '__main__':
     app.run(debug=True)
