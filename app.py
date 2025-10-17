@@ -15,7 +15,7 @@ model = None
 def load_model():
     global model
     if model is None:
-        model = tf.keras.models.load_model('medicinal_plant_classifier_model.h5')
+        model = tf.keras.models.load_model('medicinal_plant_model.h5')
 
 class_names = ['Arive-Dantu', 'Basale', 'Betel', 'Crape_Jasmine', 'Curry', 'Drumstick', 
     'Fenugreek', 'Guava', 'Hibiscus', 'Indian_Beech', 'Indian_Mustard', 
